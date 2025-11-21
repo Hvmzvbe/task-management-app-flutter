@@ -6,4 +6,5 @@ class TTexts {
   static const String email = "Email Address";
   static const String password = "Password";
   static const String signIn = "Sign In";
+  static const String createAccount = "Create an Account";
 }
