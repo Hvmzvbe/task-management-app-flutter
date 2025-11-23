@@ -1,10 +1,11 @@
 import 'package:first_app/animation/FadeAnimation.dart';
-import 'package:first_app/screen/Auth/loginpage.dart';
+import 'package:first_app/screen/Auth/login_page.dart';
 import 'package:first_app/utils/theme/theme.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'package:page_transition/page_transition.dart';
 void main()=> runApp(
-  MaterialApp(
+  GetMaterialApp(
     debugShowCheckedModeBanner: false,
     themeMode: ThemeMode.system, // Détecte automatiquement le mode système
     theme: TAppTheme.lightTheme,  // Thème clair

@@ -1,11 +1,14 @@
 
-import 'package:first_app/common/style/widgets/login_signup/form_devider.dart';
-import 'package:first_app/common/style/widgets/login_signup/social_button.dart';
+import 'package:first_app/common/widgets/login_signup/form_devider.dart';
+import 'package:first_app/common/widgets/login_signup/social_button.dart';
+import 'package:first_app/screen/Auth/signup_page.dart';
 import 'package:first_app/utils/constants/image_strings.dart';
 import 'package:first_app/utils/constants/sizes.dart';
 import 'package:first_app/utils/constants/text_strings.dart';
 import 'package:first_app/utils/helpers/helper_functions.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:iconsax/iconsax.dart';
 
 class Loginpage extends StatelessWidget {
@@ -112,7 +115,7 @@ class TloginForm extends StatelessWidget {
           SizedBox(width : double.infinity , child : ElevatedButton(onPressed: (){}, child:Text(TTexts.signIn)) ),
           const SizedBox(height: TSizes.spaceBtwSections),
           //create account
-          SizedBox(width : double.infinity , child : OutlinedButton(onPressed: (){}, child:Text(TTexts.createAccount) )),
+          SizedBox(width : double.infinity , child : OutlinedButton(onPressed: ()=>Get.to(()=>const SignupPage()), child:Text(TTexts.createAccount) )),
           const SizedBox(height: TSizes.spaceBtwSections/2),
         
         ],
