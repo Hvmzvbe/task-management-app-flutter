@@ -7,4 +7,6 @@ class TTexts {
   static const String password = "Password";
   static const String signIn = "Sign In";
   static const String createAccount = "Create an Account";
+  static const String orSignInWith = "Or sign in with";
+  
 }
