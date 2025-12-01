@@ -1,19 +1,21 @@
 
 import 'package:first_app/utils/constants/colors.dart';
 import 'package:first_app/utils/constants/text_strings.dart';
+import 'package:first_app/utils/helpers/helper_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class TformDevider extends StatelessWidget {
   const TformDevider({
     super.key,
-    required this.dark,
+    required this.dividerText,
   });
 
-  final bool dark;
+  final String dividerText;
 
   @override
   Widget build(BuildContext context) {
+    final  dark =THelperFunctions.isDarkMode(Get.context!);
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [

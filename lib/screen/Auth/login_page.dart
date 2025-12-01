@@ -34,7 +34,7 @@ class Loginpage extends StatelessWidget {
             //form
             TloginForm(),
               //devider
-            TformDevider(dark: dark),
+            TformDevider(dividerText: TTexts.orSignInWith.capitalize!,),
             const SizedBox(height: TSizes.spaceBtwSections),
               //footer
             TSocialButton()

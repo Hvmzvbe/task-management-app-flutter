@@ -17,5 +17,6 @@ class TTexts {
   static const String termsOfUse = "Terms of Use";
   static const String privacyPolicy = "Privacy Policy";
   static const String and = "and";
+  static const String orSignUpWith = "Or sign up with";
   
 }
