@@ -1,10 +1,24 @@
 import 'package:first_app/animation/FadeAnimation.dart';
+import 'package:first_app/models/user_model.dart';
 import 'package:first_app/screen/Auth/login_page.dart';
 import 'package:first_app/utils/theme/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/adapters.dart';
 import 'package:page_transition/page_transition.dart';
-void main()=> runApp(
+void main() async {
+  
+  // Initialiser Hive
+  await Hive.initFlutter();
+  
+  // Enregistrer les adapters
+  Hive.registerAdapter(UserModelAdapter());
+  
+  // Ouvrir les boxes nécessaires
+  await Hive.openBox('preferences');
+  
+  runApp(
   GetMaterialApp(
     debugShowCheckedModeBanner: false,
     themeMode: ThemeMode.system, // Détecte automatiquement le mode système
@@ -13,6 +27,7 @@ void main()=> runApp(
     home: MyWidget(),
   )
 );
+} 
 class MyWidget extends StatefulWidget {
   @override
   State<MyWidget> createState() => _MyWidgetState();
