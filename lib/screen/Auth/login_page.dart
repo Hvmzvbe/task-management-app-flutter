@@ -1,6 +1,7 @@
 import 'package:first_app/common/widgets/login_signup/form_devider.dart';
 import 'package:first_app/common/widgets/login_signup/social_button.dart';
 import 'package:first_app/screen/Auth/signup_page.dart';
+import 'package:first_app/screen/NavigationMenu.dart';
 import 'package:first_app/services/auth_service.dart';
 import 'package:first_app/utils/constants/image_strings.dart';
 import 'package:first_app/utils/constants/sizes.dart';
@@ -79,6 +80,7 @@ class _TloginFormState extends State<TloginForm> {
         THelperFunctions.showSnackBar('Connexion réussie! Bienvenue ${result['user'].firstName}');
         // TODO: Naviguer vers la page d'accueil
         // Get.offAll(() => HomePage());
+        Get.to( () => const NavigationMenu()); // Placeholder
       } else {
         THelperFunctions.showSnackBar(result['message']);
       }
