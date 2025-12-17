@@ -1,9 +1,10 @@
+import 'package:first_app/providers/auth_provider.dart';
+import 'package:first_app/providers/task_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:first_app/utils/constants/colors.dart';
 import 'package:first_app/utils/helpers/helper_functions.dart';
-
-// ignore_for_file: unused_element, deprecated_member_use
+import 'package:provider/provider.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -23,107 +24,133 @@ class HomeScreen extends StatelessWidget {
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Bonjour! 👋',
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Voici vos tâches du jour',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              const SizedBox(height: 24),
+          child: Consumer2<AuthProvider, TaskProvider>(
+            builder: (context, authProvider, taskProvider, child) {
+              final user = authProvider.currentUser;
               
-              // Statistiques rapides
-              Row(
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: _StatCard(
-                      icon: Iconsax.task_square,
-                      title: 'Tâches',
-                      value: '12',
-                      color: Colors.blue,
-                    ),
+                  Text(
+                    'Bonjour ${user?.firstName ?? 'Utilisateur'}! 👋',
+                    style: Theme.of(context).textTheme.headlineMedium,
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _StatCard(
-                      icon: Iconsax.tick_circle,
-                      title: 'Terminées',
-                      value: '8',
-                      color: Colors.green,
-                    ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Voici vos tâches du jour',
+                    style: Theme.of(context).textTheme.bodyMedium,
                   ),
+                  const SizedBox(height: 24),
+                  
+                  // Statistiques rapides
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _StatCard(
+                          icon: Iconsax.task_square,
+                          title: 'Tâches',
+                          value: '${taskProvider.totalTasks}',
+                          color: Colors.blue,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _StatCard(
+                          icon: Iconsax.tick_circle,
+                          title: 'Terminées',
+                          value: '${taskProvider.completedTasks}',
+                          color: Colors.green,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _StatCard(
+                          icon: Iconsax.clock,
+                          title: 'En cours',
+                          value: '${taskProvider.pendingTasks}',
+                          color: Colors.orange,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _StatCard(
+                          icon: Iconsax.danger,
+                          title: 'Priorité haute',
+                          value: '${taskProvider.highPriorityTasks}',
+                          color: Colors.red,
+                        ),
+                      ),
+                    ],
+                  ),
+                  
+                  const SizedBox(height: 32),
+                  
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Tâches du jour',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          // Naviguer vers l'écran des tâches
+                        },
+                        child: const Text('Voir tout'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  // Liste des tâches du jour
+                  ...taskProvider.getTodayTasks().take(3).map((task) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: _TaskCard(
+                        task: task,
+                        onToggle: () {
+                          taskProvider.toggleTaskCompletion(task.id);
+                        },
+                      ),
+                    );
+                  }).toList(),
+                  
+                  // Si aucune tâche du jour
+                  if (taskProvider.getTodayTasks().isEmpty)
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(32),
+                        child: Column(
+                          children: [
+                            Icon(
+                              Iconsax.task_square,
+                              size: 64,
+                              color: Colors.grey.withOpacity(0.5),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Aucune tâche pour aujourd\'hui',
+                              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                 ],
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: _StatCard(
-                      icon: Iconsax.clock,
-                      title: 'En cours',
-                      value: '4',
-                      color: Colors.orange,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _StatCard(
-                      icon: Iconsax.people,
-                      title: 'Équipes',
-                      value: '3',
-                      color: Colors.purple,
-                    ),
-                  ),
-                ],
-              ),
-              
-              const SizedBox(height: 32),
-              Text(
-                'Tâches récentes',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: 16),
-              
-              // Liste des tâches (exemple)
-              _TaskCard(
-                title: 'Développer la page d\'accueil',
-                description: 'Créer l\'interface utilisateur',
-                priority: 'Haute',
-                dueDate: 'Aujourd\'hui',
-              ),
-              const SizedBox(height: 12),
-              _TaskCard(
-                title: 'Réunion d\'équipe',
-                description: 'Discussion sur le projet',
-                priority: 'Moyenne',
-                dueDate: 'Demain',
-              ),
-              const SizedBox(height: 12),
-              _TaskCard(
-                title: 'Révision du code',
-                description: 'Code review hebdomadaire',
-                priority: 'Basse',
-                dueDate: 'Cette semaine',
-              ),
-            ],
+              );
+            },
           ),
         ),
       ),
     );
   }
 }
-
-
-
-
-
-
-
 
 class _StatCard extends StatelessWidget {
   final IconData icon;
@@ -168,28 +195,20 @@ class _StatCard extends StatelessWidget {
   }
 }
 
-
-
-
-
 class _TaskCard extends StatelessWidget {
-  final String title;
-  final String description;
-  final String priority;
-  final String dueDate;
+  final Task task;
+  final VoidCallback onToggle;
 
   const _TaskCard({
-    required this.title,
-    required this.description,
-    required this.priority,
-    required this.dueDate,
+    required this.task,
+    required this.onToggle,
   });
 
   @override
   Widget build(BuildContext context) {
-    Color priorityColor = priority == 'Haute' 
+    Color priorityColor = task.priority == 'Haute' 
         ? Colors.red 
-        : priority == 'Moyenne' 
+        : task.priority == 'Moyenne' 
             ? Colors.orange 
             : Colors.green;
 
@@ -207,52 +226,90 @@ class _TaskCard extends StatelessWidget {
           width: 1,
         ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  title,
-                  style: Theme.of(context).textTheme.titleMedium,
+          // Checkbox
+          Checkbox(
+            value: task.isCompleted,
+            onChanged: (_) => onToggle(),
+          ),
+          const SizedBox(width: 12),
+          
+          // Contenu de la tâche
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        task.title,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          decoration: task.isCompleted 
+                              ? TextDecoration.lineThrough 
+                              : null,
+                        ),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: priorityColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        task.priority,
+                        style: TextStyle(
+                          color: priorityColor,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: priorityColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  priority,
-                  style: TextStyle(
-                    color: priorityColor,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
+                const SizedBox(height: 4),
+                Text(
+                  task.description,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    decoration: task.isCompleted 
+                        ? TextDecoration.lineThrough 
+                        : null,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            description,
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Icon(Iconsax.calendar, size: 16, color: TColors.darkGrey),
-              const SizedBox(width: 4),
-              Text(
-                dueDate,
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ],
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Icon(Iconsax.calendar, size: 16, color: TColors.darkGrey),
+                    const SizedBox(width: 4),
+                    Text(
+                      _formatDate(task.dueDate),
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ],
       ),
     );
+  }
+
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final taskDate = DateTime(date.year, date.month, date.day);
+    
+    if (taskDate == today) {
+      return 'Aujourd\'hui';
+    } else if (taskDate == today.add(Duration(days: 1))) {
+      return 'Demain';
+    } else {
+      return '${date.day}/${date.month}/${date.year}';
+    }
   }
 }

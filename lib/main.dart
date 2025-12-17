@@ -1,13 +1,20 @@
 import 'package:first_app/animation/FadeAnimation.dart';
 import 'package:first_app/models/user_model.dart';
+import 'package:first_app/providers/auth_provider.dart';
+import 'package:first_app/providers/task_provider.dart';
+import 'package:first_app/providers/theme_provider.dart';
 import 'package:first_app/screen/Auth/login_page.dart';
+import 'package:first_app/screen/NavigationMenu.dart';
 import 'package:first_app/utils/theme/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:provider/provider.dart';
+
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   
   // Initialiser Hive
   await Hive.initFlutter();
@@ -19,15 +26,65 @@ void main() async {
   await Hive.openBox('preferences');
   
   runApp(
-  GetMaterialApp(
-    debugShowCheckedModeBanner: false,
-    themeMode: ThemeMode.system, // Détecte automatiquement le mode système
-    theme: TAppTheme.lightTheme,  // Thème clair
-    darkTheme: TAppTheme.darkTheme, // Thème sombre
-    home: MyWidget(),
-  )
-);
+    // MultiProvider pour fournir plusieurs providers
+    MultiProvider(
+      providers: [
+        // Provider pour l'authentification
+        ChangeNotifierProvider(
+          create: (context) => AuthProvider()..initialize(),
+        ),
+        // Provider pour les tâches
+        ChangeNotifierProvider(
+          create: (context) => TaskProvider()..initializeWithDemoData(),
+        ),
+        // Provider pour le thème
+        ChangeNotifierProvider(
+          create: (context) => ThemeProvider(),
+        ),
+      ],
+      child: MyApp(),
+    ),
+  );
 } 
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // Écouter les changements du thème
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return GetMaterialApp(
+          debugShowCheckedModeBanner: false,
+          themeMode: themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+          theme: TAppTheme.lightTheme,
+          darkTheme: TAppTheme.darkTheme,
+          // Vérifier si l'utilisateur est connecté
+          home: Consumer<AuthProvider>(
+            builder: (context, authProvider, child) {
+              // Pendant le chargement
+              if (authProvider.isLoading) {
+                return Scaffold(
+                  body: Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                );
+              }
+              
+              // Si connecté, aller au menu principal
+              if (authProvider.isAuthenticated) {
+                return NavigationMenu();
+              }
+              
+              // Sinon, afficher l'écran de bienvenue
+              return MyWidget();
+            },
+          ),
+        );
+      },
+    );
+  }
+}
+
 class MyWidget extends StatefulWidget {
   @override
   State<MyWidget> createState() => _MyWidgetState();
@@ -46,7 +103,6 @@ class _MyWidgetState extends State<MyWidget> with TickerProviderStateMixin{
   
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _scaleController = AnimationController(
       vsync: this,
@@ -96,14 +152,22 @@ class _MyWidgetState extends State<MyWidget> with TickerProviderStateMixin{
         ));
       }
     });
-
   }
+
+  @override
+  void dispose() {
+    _scaleController.dispose();
+    _scale2Controller.dispose();
+    _widthController.dispose();
+    _positionController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final double width = MediaQuery.of(context).size.width;
     return Scaffold(
       backgroundColor: Color.fromRGBO(3, 9, 23, 1),
-      
       body: Container(
         width : double.infinity,
         child: Stack(
@@ -122,7 +186,7 @@ class _MyWidgetState extends State<MyWidget> with TickerProviderStateMixin{
                 ),
               )), 
             ),
-                        Positioned(
+            Positioned(
               top: -150,
               left:0,
               child:FadeAnimation(1.3,Container(
@@ -136,7 +200,7 @@ class _MyWidgetState extends State<MyWidget> with TickerProviderStateMixin{
                 ),
               )), 
             ),
-                        Positioned(
+            Positioned(
               top: -50,
               left:0,
               child: FadeAnimation(1.6,Container(
@@ -197,7 +261,6 @@ class _MyWidgetState extends State<MyWidget> with TickerProviderStateMixin{
                                         decoration: BoxDecoration(
                                           shape: BoxShape.circle,
                                           color: Colors.blue
-                                      
                                         ),
                                         child:HideIcon == false ? Icon(Icons.arrow_forward,color: Colors.white,) : Container(),
                                       )
@@ -213,8 +276,7 @@ class _MyWidgetState extends State<MyWidget> with TickerProviderStateMixin{
                     )),
                     ) ),
                   SizedBox(height: 50)
-                  
-              ],
+                ],
               ),
             )
           ],
