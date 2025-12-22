@@ -1,4 +1,5 @@
 import 'package:first_app/animation/FadeAnimation.dart';
+import 'package:first_app/firebase_options.dart';
 import 'package:first_app/models/user_model.dart';
 import 'package:first_app/providers/auth_provider.dart';
 import 'package:first_app/providers/task_provider.dart';
@@ -6,6 +7,7 @@ import 'package:first_app/providers/theme_provider.dart';
 import 'package:first_app/screen/Auth/login_page.dart';
 import 'package:first_app/screen/NavigationMenu.dart';
 import 'package:first_app/utils/theme/theme.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'package:hive/hive.dart';
@@ -15,6 +17,11 @@ import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialiser Firebase
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   
   // Initialiser Hive
   await Hive.initFlutter();
@@ -26,18 +33,14 @@ void main() async {
   await Hive.openBox('preferences');
   
   runApp(
-    // MultiProvider pour fournir plusieurs providers
     MultiProvider(
       providers: [
-        // Provider pour l'authentification
         ChangeNotifierProvider(
           create: (context) => AuthProvider()..initialize(),
         ),
-        // Provider pour les tâches
         ChangeNotifierProvider(
           create: (context) => TaskProvider()..initializeWithDemoData(),
         ),
-        // Provider pour le thème
         ChangeNotifierProvider(
           create: (context) => ThemeProvider(),
         ),
@@ -50,7 +53,6 @@ void main() async {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    // Écouter les changements du thème
     return Consumer<ThemeProvider>(
       builder: (context, themeProvider, child) {
         return GetMaterialApp(
@@ -58,10 +60,8 @@ class MyApp extends StatelessWidget {
           themeMode: themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
           theme: TAppTheme.lightTheme,
           darkTheme: TAppTheme.darkTheme,
-          // Vérifier si l'utilisateur est connecté
           home: Consumer<AuthProvider>(
             builder: (context, authProvider, child) {
-              // Pendant le chargement
               if (authProvider.isLoading) {
                 return Scaffold(
                   body: Center(
@@ -70,12 +70,10 @@ class MyApp extends StatelessWidget {
                 );
               }
               
-              // Si connecté, aller au menu principal
               if (authProvider.isAuthenticated) {
                 return NavigationMenu();
               }
               
-              // Sinon, afficher l'écran de bienvenue
               return MyWidget();
             },
           ),

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
+import '../services/google_signin_service.dart';
 
 class AuthProvider extends ChangeNotifier {
   final AuthService _authService = AuthService();
+  final GoogleSignInService _googleSignInService = GoogleSignInService();
   
   UserModel? _currentUser;
   bool _isLoading = false;
@@ -15,7 +17,7 @@ class AuthProvider extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   bool get isAuthenticated => _currentUser != null && _currentUser!.isLoggedIn;
 
-  // Initialiser le provider (vérifier si l'utilisateur est déjà connecté)
+  // Initialiser le provider
   Future<void> initialize() async {
     _isLoading = true;
     notifyListeners();
@@ -30,7 +32,7 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  // Se connecter
+  // Se connecter avec email/password
   Future<bool> login({
     required String email,
     required String password,
@@ -44,6 +46,34 @@ class AuthProvider extends ChangeNotifier {
         email: email,
         password: password,
       );
+
+      if (result['success']) {
+        _currentUser = result['user'];
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      } else {
+        _errorMessage = result['message'];
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
+    } catch (e) {
+      _errorMessage = 'Erreur: $e';
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  // Se connecter avec Google
+  Future<bool> signInWithGoogle() async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final result = await _googleSignInService.signInWithGoogle();
 
       if (result['success']) {
         _currentUser = result['user'];
@@ -112,7 +142,10 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
+      // Déconnexion des deux services
       await _authService.logout();
+      await _googleSignInService.signOutGoogle();
+      
       _currentUser = null;
       _errorMessage = null;
     } catch (e) {
