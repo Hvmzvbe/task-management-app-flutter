@@ -14,6 +14,7 @@ import 'package:hive/hive.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
+import '../models/task_model.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,6 +29,7 @@ void main() async {
   
   // Enregistrer les adapters
   Hive.registerAdapter(UserModelAdapter());
+  Hive.registerAdapter(TaskAdapter());
   
   // Ouvrir les boxes nécessaires
   await Hive.openBox('preferences');
